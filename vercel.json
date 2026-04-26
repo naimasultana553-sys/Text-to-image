@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/main.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "backend/main.py" },
+    { "source": "/(signup|login|me|generate|history|forgot-password|reset-password)", "destination": "backend/main.py" },
+    { "source": "/(.*)", "destination": "frontend/$1" }
+  ]
+}

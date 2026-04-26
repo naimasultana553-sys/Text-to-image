@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImagiText AI | Transform Text to Art</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:ital,wght@0,400;0,700;1,400;1,700&family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Auth View -->
+        <div id="auth-view" class="view hidden">
+            <button id="theme-toggle-auth" class="theme-btn glass">🌓</button>
+            <div class="auth-card glass">
+                <img src="logo.png" alt="ImagiText AI Logo" class="brand-logo">
+                <h1 class="logo">ImagiText <span>AI</span></h1>
+                <div class="tabs">
+                    <button id="tab-login" class="active">Login</button>
+                    <button id="tab-signup">Sign Up</button>
+                </div>
+                <form id="auth-form">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="email" placeholder="hello@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" id="auth-submit" class="btn-primary">Continue</button>
+                </form>
+                <button id="forgot-link" class="btn-link">Forgot Password?</button>
+                <p id="auth-error" class="error-msg"></p>
+            </div>
+        </div>
+
+        <!-- Reset Password View -->
+        <div id="reset-view" class="view hidden">
+            <div class="auth-card glass">
+                <h1 class="logo">Reset <span>Password</span></h1>
+                <p id="reset-status" class="info-msg">Enter your email to receive a code.</p>
+                <form id="reset-form">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="reset-email" placeholder="hello@example.com" required>
+                    </div>
+                    <div id="reset-fields" class="hidden">
+                        <div class="input-group">
+                            <label>Verification Code</label>
+                            <input type="text" id="reset-code" placeholder="123456">
+                        </div>
+                        <div class="input-group">
+                            <label>New Password</label>
+                            <input type="password" id="new-password" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" id="reset-submit" class="btn-primary">Send Code</button>
+                </form>
+                <button id="back-to-login" class="btn-link">Back to Login</button>
+                <p id="reset-error" class="error-msg"></p>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view hidden">
+            <nav class="glass">
+                <div class="nav-content">
+                    <div class="logo-wrapper">
+                        <img src="logo.png" alt="Logo" class="nav-logo">
+                        <h1 class="logo-small">ImagiText <span>AI</span></h1>
+                    </div>
+                    <div class="nav-actions">
+                        <button id="theme-toggle-nav" class="theme-btn glass">🌓</button>
+                        <span id="user-email"></span>
+                        <button id="logout-btn" class="btn-outline">Logout</button>
+                    </div>
+                </div>
+            </nav>
+
+            <main>
+                <section class="generator-section">
+                    <div class="generator-card glass">
+                        <h2>What do you want to create?</h2>
+                        <div class="prompt-container">
+                            <textarea id="prompt-input" placeholder="A futuristic city with purple neon lights and flying cars..."></textarea>
+                            <div class="generator-actions">
+                                <select id="style-select">
+                                    <option value="none">Default Style</option>
+                                    <option value="photorealistic, 8k, highly detailed">Photorealistic</option>
+                                    <option value="anime style, vibrant colors, studio ghibli">Anime (Studio Ghibli)</option>
+                                    <option value="cyberpunk, neon lights, futuristic city">Cyberpunk</option>
+                                    <option value="oil painting, textured, thick brushstrokes">Oil Painting</option>
+                                    <option value="3d render, unreal engine 5, octane render">3D Render</option>
+                                    <option value="fantasy art, ethereal, mystical">Fantasy Art</option>
+                                    <option value="minimalist, clean lines, flat design">Minimalist</option>
+                                </select>
+                                <button id="generate-btn" class="btn-primary">Generate Magic</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="result-section">
+                    <div id="loading-container" class="hidden">
+                        <div class="loader"></div>
+                        <p>Our AI is dreaming up your image...</p>
+                    </div>
+                    <div id="image-result" class="hidden glass">
+                        <img id="generated-img" src="" alt="Generated Art">
+                        <div class="img-actions">
+                            <a id="download-btn" href="#" download="generated-image.png" class="btn-secondary">Download</a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="history-section">
+                    <h3>Your Gallery</h3>
+                    <div id="history-grid" class="grid">
+                        <!-- History items will be injected here -->
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

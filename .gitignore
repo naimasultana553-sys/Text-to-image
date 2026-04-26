@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+imagitext.db
+
+# Frontend/Static
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
