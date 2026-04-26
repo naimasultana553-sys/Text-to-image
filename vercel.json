@@ -1,18 +1,13 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/main.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "frontend/**",
-      "use": "@vercel/static"
+  "functions": {
+    "backend/main.py": {
+      "runtime": "vercel-python@0.10.0"
     }
-  ],
+  },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "backend/main.py" },
-    { "source": "/(signup|login|me|generate|history|forgot-password|reset-password)", "destination": "backend/main.py" },
-    { "source": "/(.*)", "destination": "frontend/$1" }
+    { "source": "/api/(.*)", "destination": "/backend/main.py" },
+    { "source": "/(signup|login|me|generate|history|forgot-password|reset-password)", "destination": "/backend/main.py" },
+    { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
 }
