@@ -5,7 +5,7 @@ import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-import models, schemas, database
+from api import models, schemas, database
 
 # Secret key to sign JWT tokens
 SECRET_KEY = "your-secret-key-for-dev-only"

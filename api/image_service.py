@@ -8,9 +8,10 @@ from PIL import Image as PILImage
 HF_API_TOKEN = os.getenv("HF_API_TOKEN", "")
 HF_API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
 
-UPLOAD_DIR = "uploads"
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR)
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+if not os.getenv("VERCEL"):
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
 
 def generate_image_ai(prompt: str, user_id: int):
     # Enhancing the prompt for extreme photorealism (Real-Life Look)

@@ -4,10 +4,18 @@
     { "src": "api/index.py", "use": "@vercel/python" },
     { "src": "frontend/**", "use": "@vercel/static" }
   ],
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/(signup|login|me|generate|history|forgot-password|reset-password)", "destination": "/api/index.py" },
-    { "source": "/(app\\.js|style\\.css|logo\\.png)", "destination": "/frontend/$1" },
-    { "source": "/(.*)", "destination": "/frontend/index.html" }
+  "routes": [
+    { "src": "/signup", "dest": "/api/index.py" },
+    { "src": "/login", "dest": "/api/index.py" },
+    { "src": "/me", "dest": "/api/index.py" },
+    { "src": "/generate", "dest": "/api/index.py" },
+    { "src": "/history", "dest": "/api/index.py" },
+    { "src": "/forgot-password", "dest": "/api/index.py" },
+    { "src": "/reset-password", "dest": "/api/index.py" },
+    { "src": "/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/app.js", "dest": "/frontend/app.js" },
+    { "src": "/style.css", "dest": "/frontend/style.css" },
+    { "src": "/logo.png", "dest": "/frontend/logo.png" },
+    { "src": "/(.*)", "dest": "/frontend/index.html" }
   ]
 }

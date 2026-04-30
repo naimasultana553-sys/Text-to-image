@@ -1,17 +1,22 @@
-from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
+import sys
+import os
+
+# Ensure the api/ directory is on the Python path for Vercel
+sys.path.insert(0, os.path.dirname(__file__))
+
+from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from datetime import timedelta
-import os
 from dotenv import load_dotenv
 import logging
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 logging.basicConfig(level=logging.INFO)
 
-import models, schemas, database, auth, image_service
+from api import models, schemas, database, auth, image_service
 
 models.Base.metadata.create_all(bind=database.engine)
 
@@ -20,7 +25,7 @@ app = FastAPI(title="ImagiText AI API")
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, specify your frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,7 +36,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# Email Configuration (Should use environment variables in production)
+# Email Configuration
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = os.getenv("EMAIL_USER", "your-email@gmail.com")
@@ -65,25 +70,21 @@ def forgot_password(req: schemas.ForgotPassword, db: Session = Depends(database.
     from datetime import datetime, timezone, timedelta
     user = db.query(models.User).filter(models.User.email == req.email).first()
     if not user:
-        # Security: Don't reveal if user exists, but here we can be helpful for dev
         return {"message": "If this email is registered, you will receive a code."}
     
     import random
     reset_code = f"{random.randint(100000, 999999)}"
     user.reset_code = reset_code
-    # Use timezone-aware UTC for robustness
     user.reset_code_expires = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=15)
     db.commit()
     
     logging.info(f"Generated reset code for {req.email}")
     
-    # Send real email
     success = send_reset_email(req.email, reset_code)
     
     if success:
         return {"message": "Verification code sent to your email address."}
     else:
-        # Fallback for demo if credentials aren't set
         logging.error(f"\n[DEMO FALLBACK] Code for {req.email}: {reset_code}\n")
         return {"message": f"Real email failed (check credentials). For testing, use code: {reset_code}"}
 
@@ -98,7 +99,6 @@ def reset_password(req: schemas.ResetPassword, db: Session = Depends(database.ge
     if not user.reset_code or user.reset_code != req.code:
         raise HTTPException(status_code=400, detail="Invalid verification code")
         
-    # Compare naive UTC times
     current_time = datetime.now(timezone.utc).replace(tzinfo=None)
     if user.reset_code_expires and user.reset_code_expires < current_time:
         raise HTTPException(status_code=400, detail="Verification code has expired")
@@ -142,16 +142,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def get_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
 
-from fastapi import BackgroundTasks
-
 def background_save_image(db_image_id: int, image_url: str):
-    from sqlalchemy.orm import Session
-    from database import SessionLocal
-    import image_service
+    from api.database import SessionLocal
+    from api import image_service as img_svc
     
     db = SessionLocal()
     try:
-        local_path = image_service.save_image_locally(image_url)
+        local_path = img_svc.save_image_locally(image_url)
         if local_path:
             db_image = db.query(models.Image).filter(models.Image.id == db_image_id).first()
             if db_image:
@@ -167,10 +164,8 @@ def generate_image(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    # Generate URL instantly (no waiting for download)
     image_url = image_service.generate_image_ai(image_req.prompt, current_user.id)
     
-    # Save to DB with external URL first
     db_image = models.Image(
         user_id=current_user.id,
         prompt=image_req.prompt,
@@ -181,7 +176,7 @@ def generate_image(
     db.commit()
     db.refresh(db_image)
     
-    # Start background task to save a local copy if not on Vercel
+    # Only save locally when not on Vercel (read-only filesystem)
     if not os.getenv("VERCEL"):
         background_tasks.add_task(background_save_image, db_image.id, image_url)
     
@@ -194,17 +189,18 @@ def get_history(
 ):
     return db.query(models.Image).filter(models.Image.user_id == current_user.id).order_by(models.Image.created_at.desc()).all()
 
-# Serve static files at the end if not on Vercel
+# Serve uploads only when not on Vercel
 if not os.getenv("VERCEL"):
-    if not os.path.exists("uploads"):
-        os.makedirs("uploads")
-    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+    uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")
+    if not os.path.exists(uploads_dir):
+        os.makedirs(uploads_dir)
+    app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 
-# On Vercel, the frontend is served via vercel.json rewrites
-# But for local fallback, we keep this:
-frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
-if os.path.exists(frontend_path):
-    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+# Local dev: serve frontend
+if not os.getenv("VERCEL"):
+    frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+    if os.path.exists(frontend_path):
+        app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
 
 
 if __name__ == "__main__":
