@@ -1,8 +1,13 @@
 {
   "version": 2,
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python" },
+    { "src": "frontend/**", "use": "@vercel/static" }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/(signup|login|me|generate|history|forgot-password|reset-password)", "destination": "/api/index.py" },
-    { "source": "/(.*)", "destination": "/frontend/$1" }
+    { "source": "/(app\\.js|style\\.css|logo\\.png)", "destination": "/frontend/$1" },
+    { "source": "/(.*)", "destination": "/frontend/index.html" }
   ]
 }

@@ -181,8 +181,9 @@ def generate_image(
     db.commit()
     db.refresh(db_image)
     
-    # Start background task to save a local copy
-    background_tasks.add_task(background_save_image, db_image.id, image_url)
+    # Start background task to save a local copy if not on Vercel
+    if not os.getenv("VERCEL"):
+        background_tasks.add_task(background_save_image, db_image.id, image_url)
     
     return db_image
 
@@ -193,8 +194,11 @@ def get_history(
 ):
     return db.query(models.Image).filter(models.Image.user_id == current_user.id).order_by(models.Image.created_at.desc()).all()
 
-# Serve static files at the end
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# Serve static files at the end if not on Vercel
+if not os.getenv("VERCEL"):
+    if not os.path.exists("uploads"):
+        os.makedirs("uploads")
+    app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # On Vercel, the frontend is served via vercel.json rewrites
 # But for local fallback, we keep this:
